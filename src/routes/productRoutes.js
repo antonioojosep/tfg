@@ -15,10 +15,10 @@ router.get('/', async (req, res) => {
 
 // Create a new product
 router.post('/', async (req, res) => {
-    const { name, price, type, categority } = req.body;
+    const { name, price, type, category } = req.body;
 
     try {
-        const newProduct = new Product({ name, price, type, categority });
+        const newProduct = new Product({ name, price, type, category });
         await newProduct.save();
         res.status(201).json(newProduct);
     } catch (error) {
@@ -42,10 +42,10 @@ router.get('/:id', async (req, res) => {
 // Update a product
 router.put('/:id', async (req, res) => {
     try {
-        const { name, price, type, categority } = req.body;
+        const { name, price, type, category } = req.body;  // Corregido "categority" a "category"
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            { name, price, type, categority },
+            { name, price, type, category },
             { new: true }
         );
         if (!product) {
