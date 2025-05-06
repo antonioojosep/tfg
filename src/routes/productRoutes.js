@@ -1,5 +1,5 @@
 import express from 'express';
-import Product from '../models/Product.js';
+import Product from '../models/product.js';
 
 const router = express.Router();
 
@@ -42,7 +42,7 @@ router.get('/:id', async (req, res) => {
 // Update a product
 router.put('/:id', async (req, res) => {
     try {
-        const { name, price, type, category } = req.body;  // Corregido "categority" a "category"
+        const { name, price, type, category } = req.body;
         const product = await Product.findByIdAndUpdate(
             req.params.id,
             { name, price, type, category },

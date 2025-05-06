@@ -13,7 +13,7 @@ const tableSchema = new mongoose.Schema({
     },
     ticket: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Ticket",
-    }]},{ timestamps: true });
+        ref: "Bill",
+    }]});
 
 export default mongoose.model("Table", tableSchema);

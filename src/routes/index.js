@@ -9,10 +9,10 @@ import userRoutes from './userRoutes.js';
 import billRoutes from './billRoutes.js';
 
 // Use routes
-router.use('/api/tables', tableRoutes);
-router.use('/api/products', productRoutes);
-router.use('/api/user', userRoutes);
-router.use('/api/bills', billRoutes);
+router.use('/tables', tableRoutes);
+router.use('/products', productRoutes);
+router.use('/user', userRoutes);
+router.use('/bills', billRoutes);
 
 // Export the router
 export default router;
