@@ -11,10 +11,15 @@ const tableSchema = new mongoose.Schema({
         enum: ["available", "reserved", "occupied", "waiting"],
         default: "available",
     },
-    ticket: [{
+    company: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Bill",
-    }]
+        ref: "Company",
+        required: true,
+    },
+    capacity: {
+        type: Number,
+        required: true,
+    },
 });
 
 export default mongoose.model("Table", tableSchema);

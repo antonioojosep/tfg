@@ -24,6 +24,16 @@ router.get('/types', async (req, res) => {
     }
 });
 
+// Get all products
+router.get('/', async (req, res) => {
+    try {
+        const products = await Product.find();
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Get all products by category
 router.get('/category/:category', async (req, res) => {
     try {

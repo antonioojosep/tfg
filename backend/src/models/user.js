@@ -18,7 +18,11 @@ const userSchema = new mongoose.Schema({
     active: {
         type: Boolean,
         default: true
-    }
+    },
+    company: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Company"
+    }]
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

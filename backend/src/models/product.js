@@ -17,6 +17,12 @@ const productSchema = new mongoose.Schema({
     category: {
         type: String, // Example: soda, meat, etc.
         required: true,
-    }}, { timestamps: true });
+    },
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Company",
+        required: true,
+    }
+}, { timestamps: true });
 
 export default mongoose.model("Product", productSchema);

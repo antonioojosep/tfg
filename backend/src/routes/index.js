@@ -8,7 +8,7 @@ import productRoutes from './productRoutes.js';
 import userRoutes from './userRoutes.js';
 import billRoutes from './billRoutes.js';
 import commandRoutes from './commandRoutes.js';
-import printerRoutes from './printerRoutes.js';
+import statsRoutes from './statsRoutes.js';
 
 // Use routes
 router.use('/tables', tableRoutes);
@@ -16,7 +16,7 @@ router.use('/products', productRoutes);
 router.use('/user', userRoutes);
 router.use('/bills', billRoutes);
 router.use('/orders', commandRoutes);
-router.use('/printers', printerRoutes);
+router.use('/stats', statsRoutes)
 
 // Export the router
 export default router;

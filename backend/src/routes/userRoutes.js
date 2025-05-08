@@ -5,6 +5,55 @@ import User from '../models/user.js';
 
 const router = express.Router();
 
+router.get('/logout', (req, res) => {
+    res.clearCookie('token');
+    res.json({ message: 'Logged out' });
+});
+
+// Verify token
+router.get('/verify', (req, res) => {
+    console.log('Verifying token');
+    const token = req.cookies.token;
+    console.log('Token:', token);
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(403).json({ message: 'Forbidden' });
+        res.status(204);
+    });
+});
+
+// Get role
+router.get('/role', (req, res) => {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(403).json({ message: 'Forbidden' });
+        return res.json({ role: decoded.role });
+    });
+});
+
+// Get company
+router.get('/company', (req, res) => {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(403).json({ message: 'Forbidden' });
+        return res.json({ company: decoded.company });
+    });
+});
+
+router.get('/list', async (req, res) => {
+    try {
+        const users = await User.find({}, '-password');
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Login
 router.post('/login', async (req, res) => {
     try {
@@ -35,15 +84,28 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.get('/logout', (req, res) => {
-    res.clearCookie('token');
-    res.json({ message: 'Logged out' });
+// Delete user
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByIdAndDelete(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ message: 'User deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
-router.get('/list', async (req, res) => {
+// Create user
+router.post('/list', async (req, res) => {
     try {
-        const users = await User.find({}, '-password');
-        res.json(users);
+        const { username, password, role } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, password: hashedPassword, role });
+        await newUser.save();
+        res.status(201).json(newUser);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
