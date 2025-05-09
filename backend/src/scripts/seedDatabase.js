@@ -89,7 +89,7 @@ const seedDatabase = async () => {
                     { product: products[0]._id, amount: 2 },
                     { product: products[1]._id, amount: 1 }
                 ],
-                status: "completed",
+                status: "pending",
                 company: companies[0]._id
             },
             {
@@ -98,7 +98,34 @@ const seedDatabase = async () => {
                     { product: products[2]._id, amount: 1 },
                     { product: products[3]._id, amount: 2 }
                 ],
-                status: "completed",
+                status: "pending",
+                company: companies[0]._id
+            },
+            {
+                table: tables[2]._id,
+                products: [
+                    { product: products[1]._id, amount: 2 },
+                    { product: products[0]._id, amount: 1 }
+                ],
+                status: "pending",
+                company: companies[0]._id
+            },
+            {
+                table: tables[0]._id,
+                products: [
+                    { product: products[0]._id, amount: 2 },
+                    { product: products[1]._id, amount: 1 }
+                ],
+                status: "pending",
+                company: companies[0]._id
+            },
+            {
+                table: tables[1]._id,
+                products: [
+                    { product: products[2]._id, amount: 1 },
+                    { product: products[3]._id, amount: 2 }
+                ],
+                status: "pending",
                 company: companies[0]._id
             },
             {

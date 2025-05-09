@@ -8,6 +8,11 @@ import Staff from './pages/Staff';
 import Window from './pages/Window';
 import './index.css';
 import PrivateRoute from './components/PrivateRoute';
+import UserLogin from './pages/UserLogin';
+import UserSelect from './pages/UserSelect';
+import TableSelector from './pages/TableSelector';
+import ProductBrowser from './pages/ProductBrowser';
+import ValidateRestaurant from './components/ValidateRestaurant';
 
 function App() {
   return (
@@ -18,6 +23,12 @@ function App() {
         <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
         <Route path="/staff" element={<PrivateRoute><Staff /></PrivateRoute>} />
         <Route path='/window' element={<PrivateRoute><Window /></PrivateRoute>} />
+        <Route path='/restaurant/:restaurant' element={<ValidateRestaurant />}>
+          <Route index element={<UserSelect />} />
+          <Route path='login' element={<UserLogin />} />
+          <Route path='table' element={<TableSelector />} />
+          <Route path='product' element={<ProductBrowser />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
   )
