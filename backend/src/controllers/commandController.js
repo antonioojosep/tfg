@@ -3,17 +3,44 @@ import { getIO } from '../sockets/socket.js';
 
 export const createCommand = async (req, res) => {
   try {
-    const { tableId, products } = req.body;
-    const command = new Command({ table: tableId, products });
-    await command.save();
-    await command.populate('products.product');
+    const { table, products, company } = req.body;
 
-    const drinks = command.products.filter(p => p.product.type === 'drink');
-    const food = command.products.filter(p => p.product.type === 'food');
+    // Separar productos por tipo
+    const foodProducts = products.filter(item => item.product.type === 'food');
+    const drinkProducts = products.filter(item => item.product.type === 'drink');
 
-    getIO().emit('new-command', command);
+    const commands = [];
 
-    res.status(201).json();
+    // Crear comanda de comida si hay productos de comida
+    if (foodProducts.length > 0) {
+      const foodCommand = new Command({
+        table,
+        products: foodProducts,
+        company
+      });
+      await foodCommand.save();
+      await foodCommand.populate('products.product');
+      commands.push(foodCommand);
+    }
+
+    // Crear comanda de bebida si hay productos de bebida
+    if (drinkProducts.length > 0) {
+      const drinkCommand = new Command({
+        table,
+        products: drinkProducts,
+        company
+      });
+      await drinkCommand.save();
+      await drinkCommand.populate('products.product');
+      commands.push(drinkCommand);
+    }
+
+    // Emitir eventos para cada comanda
+    commands.forEach(command => {
+      getIO().emit('new-command', command);
+    });
+    
+    res.status(201).json(commands);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

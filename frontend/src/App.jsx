@@ -26,8 +26,8 @@ function App() {
         <Route path='/restaurant/:restaurant' element={<ValidateRestaurant />}>
           <Route index element={<UserSelect />} />
           <Route path='login' element={<UserLogin />} />
-          <Route path='table' element={<TableSelector />} />
-          <Route path='product' element={<ProductBrowser />} />
+          <Route path='table' element={<PrivateRoute><TableSelector /></PrivateRoute>} />
+          <Route path='product-browser' element={<PrivateRoute><ProductBrowser /></PrivateRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

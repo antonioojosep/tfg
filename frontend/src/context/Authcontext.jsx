@@ -1,93 +1,93 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [company, setCompany] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [company, setCompany] = useState(null);
 
-    const handleGetCompany = async () => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/company`, {
-                method: 'GET',
-                credentials: 'include',
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setCompany(data);
-            } else {
-                throw new Error('Failed to fetch company data');
-            }
-        } catch (error) {
-            console.error('Error fetching company data:', error);
-        }
-    };
+  const verifyAuth = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/verify`, {
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setIsAuthenticated(true);
+        setCompany(data.user.company);
+      } else {
+        setIsAuthenticated(false);
+        setCompany(null);
+      }
+    } catch (error) {
+      console.error('Auth verification error:', error);
+      setIsAuthenticated(false);
+      setCompany(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const handleLogin = async (username, password) => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/login`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-            if (res.ok) {
-                await handleGetCompany();
-                setIsAuthenticated(true);
-            } else {
-                throw new Error('Login failed');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-        }
-    };
+  useEffect(() => {
+    verifyAuth();
+  }, []);
 
-    const handleLogout = async () => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/logout`, {
-                method: 'POST',
-                credentials: 'include',
-            });
-            if (res.ok) {
-                setCompany(null);
-                setIsAuthenticated(false);
-            } else {
-                throw new Error('Logout failed');
-            }
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-    };
+const handleLogin = async (username, password) => {
+  try {
+    setIsLoading(true);
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/login`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, password })
+    });
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/verify`, {
-                    credentials: 'include',
-                });
-                if (res.ok) {
-                    setIsAuthenticated(true);
-                    await handleGetCompany();
-                }
-            } catch (err) {
-                setCompany(null);
-                setIsAuthenticated(false);
-            }
-        };
-        
-        checkAuth();
-    }, []);
+    if (!res.ok) {
+      throw new Error('Login failed');
+    }
 
-    return (
-        <AuthContext.Provider value={{ 
-            isAuthenticated, 
-            company, 
-            handleLogin, 
-            handleLogout 
-        }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    const data = await res.json();
+    setIsAuthenticated(true);
+    setCompany(data.company);
+    return true;
+  } catch (error) {
+    console.error('Login error:', error);
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/user/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } finally {
+      setIsAuthenticated(false);
+      setCompany(null);
+    }
+  };
+
+  return (
+    <AuthContext.Provider 
+      value={{ 
+        isAuthenticated, 
+        isLoading,
+        company, 
+        handleLogin, 
+        handleLogout,
+        verifyAuth 
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export default AuthContext;

@@ -1,42 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import useSocket from '../hooks/useSocket';
+import Navbar from '../components/Navbar';
 
-const Window = () => {
-  // Estado
+export default function Window() {
   const [commands, setCommands] = useState([]);
   const [activeTab, setActiveTab] = useState('food');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [companyId, setCompanyId] = useState(null);
 
-  // Efectos
+  const fetchCompanyId = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/company`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setCompanyId(data.company._id || data.company);
+    } catch (error) {
+      console.error('Error fetching company:', error);
+    }
+  };
+
+  const fetchCommands = async () => {
+    if (!companyId) return;
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/orders/company/${companyId}`,
+        { credentials: 'include' }
+      );
+      const data = await response.json();
+      console.log('Fetched commands:', data);
+      setCommands(data);
+    } catch (error) {
+      console.error('Error fetching commands:', error);
+      setCommands([]);
+    }
+  };
+
   useEffect(() => {
+    fetchCompanyId();
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
-
-    const fetchCommands = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
-          credentials: 'include'
-        });
-        const data = await response.json();
-        setCommands(data.filter(command => command.status === 'pending'));
-      } catch (error) {
-        console.error('Error fetching commands:', error);
-      }
-    };
-
-    fetchCommands();
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Socket connection para actualizaciones en tiempo real
-  useSocket((command) => {
-    setCommands(prev => [...prev, command]);
+  useEffect(() => {
+    if (companyId) {
+      fetchCommands();
+      const interval = setInterval(fetchCommands, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [companyId]);
+
+  useSocket((event) => {
+    if (!companyId) return;
+
+    switch (event.type) {
+      case 'new-command':
+        if (event.command.company === companyId) {
+          setCommands(prev => [...prev, event.command]);
+        }
+        break;
+
+      case 'command-completed':
+        if (event.command.company === companyId) {
+          setCommands(prev => 
+            prev.filter(cmd => cmd._id !== event.commandId)
+          );
+        }
+        break;
+    }
   });
 
-  // Handlers
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(err => {
@@ -58,28 +94,30 @@ const Window = () => {
           'Content-Type': 'application/json'
         }
       });
-      setCommands(prev => prev.filter(cmd => cmd._id !== commandId));
+      fetchCommands();
     } catch (error) {
       console.error('Error completing command:', error);
     }
   };
 
-  // Helpers
   const getFilteredCommands = () => {
+    if (!Array.isArray(commands)) return [];
+    
     return commands
+      .filter(command => command && command.products)
       .map(command => ({
         ...command,
-        products: command.products.filter(item => item.product.type === activeTab)
+        products: command.products.filter(item => 
+          item.product && item.product.type === activeTab
+        )
       }))
       .filter(command => command.products.length > 0);
   };
 
-
-
   return (
-    <>
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      {!isFullscreen && <Navbar />}
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${!isFullscreen ? 'pt-20' : 'pt-4'}`}>
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Comandas en Preparación</h1>
           <button
@@ -104,7 +142,6 @@ const Window = () => {
           </button>
         </div>
 
-        {/* Tabs */}
         <div className="flex space-x-1 rounded-xl bg-gray-200 p-1 mb-6">
           <button
             onClick={() => setActiveTab('food')}
@@ -214,8 +251,5 @@ const Window = () => {
         )}
       </div>
     </div>
-    </>
   );
-};
-
-export default Window;
+}

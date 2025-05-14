@@ -32,11 +32,15 @@ export const createBill = async (req, res) => {
         // Actualizar estado de las comandas
         await Command.updateMany(
             { table: tableId, status: { $ne: "completed" } },
-            { status: "completed" }
+            { status: "paid" }
         );
 
-        // Notificar por WebSocket
-        getIO().emit('new-bill', bill);
+        // Actualizar estado de la mesa
+        await Table.findByIdAndUpdate(tableId, { status: "available" });
+
+        // Emitir eventos de socket
+        getIO().emit('bill-paid', bill);
+        getIO().emit('table-updated', { tableId, isAvailable: true });
 
         res.status(201).json(bill);
     } catch (error) {

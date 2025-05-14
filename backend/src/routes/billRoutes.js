@@ -2,6 +2,7 @@ import express from 'express';
 import { auth, checkRole } from '../middlewares/authMiddleware.js';
 import { createBill } from '../controllers/billController.js';
 import Bill from '../models/bill.js';
+import { getIO } from '../sockets/socket.js';
 
 const router = express.Router();
 
