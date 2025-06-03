@@ -41,6 +41,8 @@ export default function TableSelector() {
   const [order, setOrder] = useState([]);
   const [currentCommands, setCurrentCommands] = useState([]);
   const { handleLogout, company } = use(AuthContext);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("cash");
 
   // Suscripción a eventos de WebSocket
   useSocket((event) => {
@@ -96,7 +98,8 @@ export default function TableSelector() {
         { credentials: 'include' }
       );
       const data = await response.json();
-      setCurrentCommands(data);
+      // Filtrar solo las que NO están pagadas
+      setCurrentCommands(data.filter(cmd => cmd.status !== "paid"));
     } catch (error) {
       console.error('Error fetching table commands:', error);
     }
@@ -156,6 +159,7 @@ export default function TableSelector() {
         throw new Error('Error al enviar la orden');
       }
 
+      setCurrentCommands([]);
       setOrder([]);
       setSelectedTable(null);
     } catch (error) {
@@ -163,52 +167,37 @@ export default function TableSelector() {
     }
   };
 
-  const handlePayTable = async () => {
+  const handlePayTable = async (selectedMethod) => {
     try {
-        // Validaciones previas
-        if (!selectedTable?._id || !selectedTable?.company) {
-            throw new Error('Información de mesa incompleta');
+      if (!selectedTable?._id || !selectedTable?.company) {
+        throw new Error('Información de mesa incompleta');
+      }
+      if (!currentCommands?.length) {
+        throw new Error('No hay comandas para pagar');
+      }
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/bills`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            tableId: selectedTable._id,
+            method: selectedMethod,
+          }),
         }
-
-        if (!currentCommands?.length) {
-            throw new Error('No hay comandas para pagar');
-        }
-
-        // Confirmar acción
-        if (!window.confirm('¿Estás seguro de procesar el pago?')) {
-            return;
-        }
-
-        const response = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/bills`,
-            {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    tableId: selectedTable._id,
-                    method: "cash", // TODO: Implementar selector de método
-                    company: selectedTable.company
-                }),
-            }
-        );
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.message || 'Error al procesar el pago');
-        }
-
-        // Actualizar estado local
-        setCurrentCommands([]);
-        setOrder([]);
-        setSelectedTable(null);
-
-
+      );
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Error al procesar el pago');
+      }
+      setCurrentCommands([]);
+      setOrder([]);
+      setSelectedTable(null);
     } catch (error) {
-        console.error("Error al procesar el pago:", error);
+      console.error("Error al procesar el pago:", error);
     }
   };
 
@@ -224,7 +213,7 @@ export default function TableSelector() {
             </h1>
             <div className="space-x-4">
               <button
-                onClick={handlePayTable}
+                onClick={() => setShowPaymentModal(true)}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all"
               >
                 <div className="flex items-center">
@@ -332,6 +321,39 @@ export default function TableSelector() {
                 )}
               </Card>
             ))}
+          </div>
+        </div>
+      )}
+
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-xs">
+            <h2 className="text-xl font-bold mb-4">Selecciona método de pago</h2>
+            <select
+              value={paymentMethod}
+              onChange={e => setPaymentMethod(e.target.value)}
+              className="w-full mb-6 p-2 border rounded-lg"
+            >
+              <option value="cash">Efectivo</option>
+              <option value="card">Tarjeta</option>
+            </select>
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  await handlePayTable(paymentMethod);
+                  setShowPaymentModal(false);
+                }}
+                className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+              >
+                Confirmar
+              </button>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}

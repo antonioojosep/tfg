@@ -32,12 +32,6 @@ const seedDatabase = async () => {
                 address: 'Calle Principal 123',
                 phone: '123456789',
                 email: 'buensabor@email.com'
-            },
-            {
-                name: 'Bar La Esquina',
-                address: 'Avenida Central 456',
-                phone: '987654321',
-                email: 'laesquina@email.com'
             }
         ]);
 
@@ -48,7 +42,7 @@ const seedDatabase = async () => {
                 username: 'admin',
                 password: hashedPassword,
                 role: 'admin',
-                company: [companies[0]._id, companies[1]._id] // Admin tiene acceso a todas las compañías
+                company: [companies[0]._id]
             },{
                 username: 'juan',
                 password: hashedPassword,
@@ -63,7 +57,7 @@ const seedDatabase = async () => {
                 username: 'pepe',
                 password: hashedPassword,
                 role: 'waiter',
-                company: [companies[1]._id]
+                company: [companies[0]._id]
             }]);
 
         // Create sample products
@@ -80,90 +74,6 @@ const seedDatabase = async () => {
             { number: 2, company: companies[0]._id, capacity: 4 },
             { number: 3, company: companies[0]._id, capacity: 6 }
         ]);
-
-        // Create sample commands
-        const commands = await Command.insertMany([
-            {
-                table: tables[0]._id,
-                products: [
-                    { product: products[0]._id, amount: 2 },
-                    { product: products[1]._id, amount: 1 }
-                ],
-                status: "pending",
-                company: companies[0]._id
-            },
-            {
-                table: tables[1]._id,
-                products: [
-                    { product: products[2]._id, amount: 1 },
-                    { product: products[3]._id, amount: 2 }
-                ],
-                status: "pending",
-                company: companies[0]._id
-            },
-            {
-                table: tables[2]._id,
-                products: [
-                    { product: products[1]._id, amount: 2 },
-                    { product: products[0]._id, amount: 1 }
-                ],
-                status: "pending",
-                company: companies[0]._id
-            },
-            {
-                table: tables[0]._id,
-                products: [
-                    { product: products[0]._id, amount: 2 },
-                    { product: products[1]._id, amount: 1 }
-                ],
-                status: "pending",
-                company: companies[0]._id
-            },
-            {
-                table: tables[1]._id,
-                products: [
-                    { product: products[2]._id, amount: 1 },
-                    { product: products[3]._id, amount: 2 }
-                ],
-                status: "pending",
-                company: companies[0]._id
-            },
-            {
-                table: tables[2]._id,
-                products: [
-                    { product: products[1]._id, amount: 2 },
-                    { product: products[0]._id, amount: 1 }
-                ],
-                status: "pending",
-                company: companies[0]._id
-            }
-        ]);
-
-        // Create sample bills
-        await Bill.insertMany([
-            {
-                table: tables[0]._id,
-                total: 2 * 2.5 + 1 * 10.0,
-                method: "cash",
-                status: "paid",
-                company: companies[0]._id
-            },
-            {
-                table: tables[1]._id,
-                total: 1 * 2.5 + 2 * 15.0,
-                method: "card",
-                status: "paid",
-                company: companies[0]._id
-            },
-            {
-                table: tables[2]._id,
-                total: 2 * 10.0 + 1 * 2.5,
-                method: "cash",
-                status: "paid",
-                company: companies[0]._id
-            }
-        ]);
-
         console.log('✅ Database seeded successfully');
         process.exit(0);
     } catch (error) {

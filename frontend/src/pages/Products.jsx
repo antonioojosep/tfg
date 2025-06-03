@@ -33,7 +33,7 @@ const Products = () => {
 
   const handleDelete = async (id) => {
     if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) return;
-    await fetch(`/api/products/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
       method: 'DELETE',
       credentials: 'include',
     });

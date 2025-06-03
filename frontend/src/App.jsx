@@ -13,6 +13,7 @@ import UserSelect from './pages/UserSelect';
 import TableSelector from './pages/TableSelector';
 import ProductBrowser from './pages/ProductBrowser';
 import ValidateRestaurant from './components/ValidateRestaurant';
+import Tickets from './pages/Tickets';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path='table' element={<PrivateRoute><TableSelector /></PrivateRoute>} />
           <Route path='product-browser' element={<PrivateRoute><ProductBrowser /></PrivateRoute>} />
         </Route>
+        <Route path="/tickets" element={<PrivateRoute><Tickets /></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
   )

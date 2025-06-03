@@ -1,5 +1,6 @@
 import express from 'express';
 import Product from '../models/product.js';
+import { auth } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -54,10 +55,11 @@ router.get('/type/:type', async (req, res) => {
 });
 
 // Product CRUD operations
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const { name, price, type, category } = req.body;
-    const newProduct = new Product({ name, price, type, category });
+    const company = req.user.company._id || req.user.company;
+    const newProduct = new Product({ name, price, type, category, company });
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (error) {

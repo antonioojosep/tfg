@@ -2,6 +2,7 @@ import express from "express";
 import Command from "../models/command.js";
 import { createCommand } from "../controllers/commandController.js";
 import { getIO } from "../sockets/socket.js";
+import { auth } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ const populateCommand = (query) => {
 };
 
 // Create new command
-router.post("/", createCommand);
+router.post("/", auth, createCommand);
 
 // Get commands by table ID with status filter
 router.get("/table/:id", async (req, res) => {

@@ -3,7 +3,8 @@ import { getIO } from '../sockets/socket.js';
 
 export const createCommand = async (req, res) => {
   try {
-    const { table, products, company } = req.body;
+    const { table, products } = req.body;
+    const company = req.user.company; // Usa el usuario autenticado
 
     // Separar productos por tipo
     const foodProducts = products.filter(item => item.product.type === 'food');

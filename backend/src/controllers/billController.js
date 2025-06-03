@@ -6,12 +6,18 @@ import { getIO } from '../sockets/socket.js';
 export const createBill = async (req, res) => {
     try {
         const { tableId, method } = req.body;
+        const company = req.user.company;
 
-        // Obtener todas las comandas pendientes de la mesa
+        // Buscar comandas NO pagadas para la mesa y compañía
         const commands = await Command.find({ 
             table: tableId,
-            status: { $ne: "completed" }
+            status: { $ne: "paid" },
+            company
         }).populate('products.product');
+
+        if (!commands.length) {
+            return res.status(400).json({ message: "No hay comandas pendientes para esta mesa" });
+        }
 
         // Calcular el total
         const total = commands.reduce((sum, command) => {
@@ -20,18 +26,20 @@ export const createBill = async (req, res) => {
             }, 0);
         }, 0);
 
+        // Crear factura como pagada
         const bill = new Bill({
             table: tableId,
             total,
             method,
-            status: "unpaid"
+            status: "paid", // SIEMPRE pagada
+            company
         });
 
         await bill.save();
 
-        // Actualizar estado de las comandas
+        // Marcar todas las comandas como pagadas
         await Command.updateMany(
-            { table: tableId, status: { $ne: "completed" } },
+            { table: tableId, status: { $ne: "paid" }, company },
             { status: "paid" }
         );
 
@@ -42,7 +50,7 @@ export const createBill = async (req, res) => {
         getIO().emit('bill-paid', bill);
         getIO().emit('table-updated', { tableId, isAvailable: true });
 
-        res.status(201).json(bill);
+        res.status(201).json({ success: true, bill });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
