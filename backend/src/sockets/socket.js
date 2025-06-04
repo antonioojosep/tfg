@@ -5,7 +5,7 @@ let ioInstance;
 export function setupSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: ["http://localhost:5173", "http://frontend:5173", "http://172.20.0.5:5173", "https://https://frontend-production-a79c4.up.railway.app"],
+      origin: ["http://localhost:5173", "http://frontend:5173", "http://172.20.0.5:5173", "https://frontend-production-a79c4.up.railway.app"],
       credentials: true,
     },
   });
