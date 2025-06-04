@@ -1,4 +1,5 @@
 import express from 'express';
+import { seedDatabase } from '../utils/seedDatabase.js';
 
 const router = express.Router();
 
@@ -19,6 +20,9 @@ router.use('/bills', billRoutes);
 router.use('/orders', commandRoutes);
 router.use('/stats', statsRoutes);
 router.use('/company', companyRoutes);
+router.get('/seed', async (req, res) => {
+    seedDatabase()
+});
 
 // Export the router
 export default router;
